@@ -11,7 +11,7 @@ app.use(express.json())
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.PASSWORD}@cluster0.eedstvb.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -54,20 +54,66 @@ async function run() {
         })
 
         // post method for adding task
-        app.post("/add_tasks", async(req, res)=>{
+        app.post("/add_tasks", async (req, res) => {
             const taskInfo = req.body
             const result = await tasksCollection.insertOne(taskInfo)
             res.send(result)
         })
 
         // get method with for getting specific added task
-        app.get("/my_tasks", async(req, res)=>{
+        app.get("/my_tasks", async (req, res) => {
             const email = req.query.email;
-            const query = {email: email};
+            const query = { email: email };
             const result = await tasksCollection.find(query).toArray()
             res.send(result)
         })
 
+        // patch method for complete button
+        app.patch("/completed_task/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    task_status: "completed"
+                }
+            }
+            const result = await tasksCollection.updateOne(query, updatedDoc, options)
+            res.send(result)
+        })
+
+        // get method for getting specific users task
+        app.get("/my_completed_task", async (req, res) => {
+            const email = req.query.email;
+            const query = {
+                email: email,
+                task_status: "completed"
+            }
+            const result = await tasksCollection.find(query).toArray()
+            res.send(result)
+        })
+
+        // delete method for delete task
+        app.delete("/delete_task/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await tasksCollection.deleteOne(query)
+            res.send(result)
+        })
+
+        app.patch("/update_task/:id", async (req, res) => {
+            const id = req.params.id;
+            const updateInfo = req.body.description;
+            const query = { _id: ObjectId(id) }
+            const option = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    description: updateInfo
+                }
+            }
+            const result = await tasksCollection.updateOne(query, updatedDoc, option)
+            res.send(result)
+        })
 
 
     } catch (error) {
