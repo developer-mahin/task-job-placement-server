@@ -15,22 +15,6 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.PASSWORD}@cluster0.eedstvb.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-
-function verifyJwt(req, res, next) {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-        return res.status(401).send({ accessToken: "Unauthorized Access" })
-    }
-    const token = authHeader.split(" ")[1]
-    jwt.verify(token, process.env.JWT_TOKEN, function (err, decoded) {
-        if (err) {
-            return res.status(403).send({ accessToken: "Forbidden Access" })
-        }
-        req.decoded = decoded
-    })
-    next()
-}
-
 async function run() {
 
     const usersCollection = client.db("task-job-placement").collection("users")
@@ -116,11 +100,11 @@ async function run() {
         })
 
         // patch method for 
-        app.patch("/comment/:id", async(req, res)=>{
+        app.patch("/comment/:id", async (req, res) => {
             const id = req.params.id;
             const updateInfo = req.body.comment;
-            const query = {_id: ObjectId(id)}
-            const options = {upsert: true}
+            const query = { _id: ObjectId(id) }
+            const options = { upsert: true }
             const updatedDoc = {
                 $set: {
                     comment: updateInfo
