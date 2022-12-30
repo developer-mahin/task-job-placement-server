@@ -115,6 +115,20 @@ async function run() {
             res.send(result)
         })
 
+        // patch method for 
+        app.patch("/comment/:id", async(req, res)=>{
+            const id = req.params.id;
+            const updateInfo = req.body.comment;
+            const query = {_id: ObjectId(id)}
+            const options = {upsert: true}
+            const updatedDoc = {
+                $set: {
+                    comment: updateInfo
+                }
+            }
+            const result = await tasksCollection.updateOne(query, updatedDoc, options)
+            res.send(result)
+        })
 
     } catch (error) {
         console.log(error.message);
